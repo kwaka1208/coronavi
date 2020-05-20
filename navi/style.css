@@ -1,0 +1,23 @@
+/*
+Theme Name: coronavi
+Theme URI: https://navi.crssrds.jp/
+Author: Kenichi Wakabayashi
+Author URI: https://navi.crssrds.jp/
+Description: coronavi Theme
+Version: 1.00
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tags: one-column, two-columns, left-sidebar, accessibility-ready, custom-logo, custom-menu, featured-images, rtl-language-support, sticky-post, theme-options, threaded-comments, translation-ready, blog, education, news
+Text Domain: coronavi
+Template: lightning
+Author WordPress Theme, Copyright 2019 Compete Themes
+Author is distributed under the terms of the GNU GPL
+*/
+
+@import url('../lightning/style.css');
+
+body {
+	font-family: "游ゴシック体", YuGothic, "游ゴシック", "Yu Gothic", "メイリオ", "Hiragino Kaku Gothic ProN", "Hiragino Sans", sans-serif;
+	font-weight: 500;
+	font-size: 18px;
+}
