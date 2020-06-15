@@ -15,71 +15,9 @@
 		';
 	}
 
-/*
- * Ajax処理 設定
- **/
-
-/*
- * Ajaxで投稿やり取り
- **/
-	add_action( 'wp_ajax_get_item_list', 'get_item_list' );
-	add_action( 'wp_ajax_nopriv_get_item_list', 'get_item_list' );
-	function get_item_list() {
-		global $post;
-		$post_type = $_POST['post_type']; // 投稿タイプ取得
-		$category_type = $_POST['post_type']; // 投稿タイプ取得
-		$item_type = $_POST['post_type']; // 投稿タイプ取得
-		$returnObj = array();
-
-		// get_posts オプション
-		$arg = array (
-			'post_status' => 'publish',
-			'post_type' => 'post',
-			'tax_query' => array(
-				'relation' => 'AND',
-				array(
-					'taxonomy' => 'drive',
-					'field' => 'name',
-					'terms' => array('MR','FR'),
-					'operator' => 'IN'
-				),
-				array(
-					'taxonomy' => 'maker',
-					'field' => 'slug',
-					'terms' => 'japan',
-					'include_children' => true,
-				),
-				array(
-					'taxonomy' => 'type',
-					'field' => 'slug',
-					'terms' => 'open',
-				)
-			)
-		);
-
-		$posts = get_posts( $args );
-
-		// 投稿ループ
-		foreach( $posts as $key => $post ) {
-			$returnObj[$key] = array(
-				'post_title' => get_the_title(),        // title
-				'post_date'  => get_the_time('Y-m-d'),  // 投稿日
-			);
-		}
-
-		// json形式に出力
-		if ( $returnObj ) : // 投稿があれば
-			echo json_encode( $returnObj );
-		else : // 投稿がなければ
-			echo json_encode( false );
-		endif ;
-
-		die();
-	}
-
-/*
- * 支援のカテゴリーを取得
- **/
+	/*
+		支援のカテゴリー取得処理
+ 	*/
 	add_action( 'wp_ajax_get_category',         'get_cagegory_list' );
 	add_action( 'wp_ajax_nopriv_get_category',  'get_cagegory_list' );
 	function get_cagegory_list() {
@@ -102,5 +40,60 @@
 		endif ;
 
 		die();
-	}?>
+	}
+
+
+	/*
+		支援情報取得処理
+ 	*/
+	add_action( 'wp_ajax_get_item_list', 'get_item_list' );
+	add_action( 'wp_ajax_nopriv_get_item_list', 'get_item_list' );
+	function get_item_list() {
+		global $post;
+		$target_type = $_POST['target_type'];		// 個人 or 事業者
+		$list_support[] = $_POST['list_support'];	// 選択されたカテゴリーの配列
+		$returnObj = array();
+
+		// get_posts オプション
+		$terms = array();
+		foreach ($list_support as $supprt_item) {
+			array_push($terms, $supprt_item);
+		}
+		$arg = array (
+			'post_status' => 'publish',
+			'post_type' => 'measure',
+			'relation' => 'OR',
+			'posts_per_page'  => '-1',
+			'tax_query' => array(
+				'relation' => 'AND',
+				array(
+					'taxonomy' => 'measure',
+					'field'    => 'term_id',
+					'terms'    => $terms,
+				)
+			)
+		);
+		$posts = get_posts( $args );
+
+		// 投稿ループ
+		foreach( $posts as $key => $post ) {
+			$returnObj[$key] = array(
+				'post_title' => get_the_title(),        // title
+				'post_url'  => get_the_time('Y-m-d'),  // 投稿日
+				'post_date'  => get_the_time('Y-m-d'),  // 投稿日
+			);
+		}
+
+		// json形式に出力
+		if ( $returnObj ) : // 投稿があれば
+			echo json_encode( $returnObj );
+		else : // 投稿がなければ
+			echo json_encode( false );
+		endif ;
+
+		die();
+	}
+
+?>
+
 

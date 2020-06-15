@@ -63,6 +63,8 @@ jQuery(function($){
                                 <li>'
                                 + '<input type="checkbox" id="'
                                 + support_category_id
+                                + '" value="'
+                                + support_category_id
                                 + '" ><label for="'
                                 + support_category_id
                                 + '" >'
@@ -141,21 +143,25 @@ jQuery(function($){
     /*
         支援情報リスト取得
     */
-    $('.loadPosts').click(function(){
+    $('#submit_search').click(function(){
         post_type = $(this).data('post'); // 投稿タイプ取得
 
         postArea.addClass('loading'); // loading開始
         postArea.children().remove(); // 一旦投稿全削除
 
 
-
+        /* チェック状態取得 */
+        var list_support = $('#support_list input[type="checkbox"]:checked').map(function() {
+            return $(this).val();
+        }).get();
 
         $.ajax({
             type: 'POST',
             url: ajaxurl,
             data: {
-                'post_type' : post_type, // 投稿タイプ送信
-                'action' : 'event', // functionsで追加したイベント名
+                'target_type' : target_type,    // 対象投稿タイプ送信
+                'list_support' : list_support,  // 選択したサポートの種類（カテゴリー名）
+                'action' : 'get_item_list',     // functionsに登録したAjax処理名
             },
             success: function( response ){
                 // jsonData受け取る
@@ -166,22 +172,26 @@ jQuery(function($){
                     $.each( jsonData, function( i, val ) {
                         // valが配列 = $returnObj
                         var post_title = val['post_title'],
+                            post_url = val['post_url'],
                             post_date = val['post_date'],
                             // term_name = val['term_name'],
                             postItem = '';
 
                         postItem += '\
-                            <article class="postItem">'
-                                +post_title
+                            <a href="'
+                                +post_url
+                            + '">'
+                            + '<article class="supprtItem date="'
                                 +post_date
+                            + '">'
+                                +post_title
                                 // +term_name
-                            +'</article>\
+                            +'</article></a>\
                         ';
 
                         postArea.prepend(postItem); // 投稿表示
                     });
                 }
-
                 postArea.removeClass('loading'); // loading終了
             }
         });
