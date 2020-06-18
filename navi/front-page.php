@@ -9,14 +9,21 @@
 
 	<div>
 		<h2>以下の中から、該当するものをお選びください</h2>
-		<ul id="support_list"></ul>
-		<a href="javascript:void();" class="btn btn-primary" role="button" id="submit_search">この条件で表示する</a>
+		<ul id="category"></ul>
+		<a href="javascript:void();" class="btn btn-primary" role="button" id="select_category">
+			この条件で表示する
+		</a>
 	</div>
-
-
+	<div>
+		<h2>以下の中から、希望するサポートの種類をお選びください</h2>
+		<ul id="support"></ul>
+		<a href="javascript:void();" class="btn btn-primary" role="button" id="select_support">
+			この条件で表示する
+		</a>
+	</div>
 	<div>
 		<h2>以下の中から、該当するものをお選びください</h2>
-		<ul id="item_list"></ul>
+		<ul id="result_list"></ul>
 	</div>
 </div>
 <?php get_footer(); ?>

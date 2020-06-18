@@ -1,44 +1,57 @@
-function test_alert() {
-    alert("これはテストです");
-}
 
 jQuery(function($){
-    var target_type = '',           // 支援対象選択
+    var target_type = '',          // 支援対象選択
         support_type = new Array(), // サポートの形
+        categoryList = $('#category'),
+        supportList = $('#support'),
+        resultList = $('#result');
 
-        supportListArea = $('#support_list'),
+    function clearCategory() {
+        categoryList.parent().hide();
+        categoryList.children().remove();
+    }
 
-        /*
-            エラーメッセージ
-        */
-        msgNoCategory = '<li>支援するカテゴリーがありません</li>';
-        msgNoSupportType = '<li>支援の形がありません</li>';
+    function clearSupport() {
+        supportList.parent().hide();
+        supportList.children().remove();
+    }
 
+    function clearResult() {
+        resultList.parent().hide();
+        resultList.children().remove();
+    }
 
-    /*
-        個人向け選択肢（カテゴリーリスト）
-    */
+    // 表示初期化
+    clearCategory();
+    clearSupport();
+    clearResult();
 
+    /************************************************************
+        個人向け・事業向けそれぞれのカテゴリーリストを取得
+    ************************************************************/
+
+    // 個人向け選択肢（カテゴリーリスト）
     $('.for_personal').click(function(){
-        $('#support_list').parent().hide();
-        $('#item_list').parent().hide();
         target_type = "personal";      // 投稿タイプ取得
+        clearCategory();
+        clearSupport();
+        clearResult();
 
-        supportListArea.children().remove(); // 一旦投稿全削除
-        get_category_list(target_type);
+        get_category(target_type);
     });
-    /*
-        事業者向け選択肢（カテゴリーリスト）
-    */
+
+    // 事業者向け選択肢（カテゴリーリスト）
     $('.for_business').click(function(){
-        $('#support_list').parent().hide();
-        $('#item_list').parent().hide();
         target_type = "business";      // 投稿タイプ取得
+        clearCategory();
+        clearSupport();
+        clearResult();
 
-        supportListArea.children().remove(); // 一旦投稿全削除
-        get_category_list(target_type);
+        get_category(target_type);
     });
-    function get_category_list(target_type) {
+
+    // カテゴリーリスト共通処理
+    function get_category(target_type) {
             $.ajax({
             type: 'POST',
             url: ajaxurl,
@@ -49,109 +62,48 @@ jQuery(function($){
             success: function( response ){
                 // jsonData受け取る
                 if ( response == 'false' ) { // 選択できるものがなければ
-                    supportListArea.prepend(msgNoCategory);
+                    categoryList.prepend('<li>支援するカテゴリーがありません</li>');
                 } else {
                     jsonData = JSON.parse( response );
                     $.each( jsonData, function( i, val ) {
                         // valが配列 = $returnObj
-                        var support_category_name = val['support_category_name'],
-                            support_category_id = val['support_category_id'],
+                        var category_name = val['category_name'],
+                            category_id = val['category_id'],
                             postItem = '';
 
 
                         postItem += '\
                                 <li>'
                                 + '<input type="checkbox" id="'
-                                + support_category_id
+                                + category_id
                                 + '" value="'
-                                + support_category_id
+                                + category_id
                                 + '" ><label for="'
-                                + support_category_id
+                                + category_id
                                 + '" >'
-                                + support_category_name
+                                + category_name
                                 + '</label>'
                             +'</a></li>\
                         ';
-                        supportListArea.prepend(postItem); // 選択肢追加
-                        $('#support_list').parent().show();
+                        categoryList.prepend(postItem); // 選択肢追加
+                        categoryList.parent().show();
                     });
                 }
-
-                postArea.removeClass('loading'); // loading終了
             }
         });
         return false;
     }
 
 
-    $('.category_item').click(function(){
-        $('#item_list').parent().hide();
-
-        supportListArea.children().remove(); // 一旦投稿全削除
-        get_category_list(target_type);
-    });
-    function get_item_list(target_type) {
-            $.ajax({
-            type: 'POST',
-            url: ajaxurl,
-            data: {
-                'target_type' : target_type, // 対象投稿タイプ送信
-                'action' : 'get_category',
-            },
-            success: function( response ){
-                // jsonData受け取る
-                if ( response == 'false' ) { // 選択できるものがなければ
-                    supportListArea.prepend(msgNoSupportType);
-                } else {
-                    jsonData = JSON.parse( response );
-                    $.each( jsonData, function( i, val ) {
-                        // valが配列 = $returnObj
-                        var support_category_name = val['support_category_name'],
-                            support_category_id = val['support_category_id'],
-                            postItem = '';
-
-                        postItem += '\
-                                <li>'
-                                + '<input type="checkbox" id="'
-                                + support_category_id
-                                + '" ><label for="'
-                                + support_category_id
-                                + '" >'
-                                + support_category_name
-                                + '</label>'
-                            +'</a></li>\
-                        ';
-
-                        supportListArea.prepend(postItem); // 投稿表示
-                        $('#support_list').parent().show();
-                    });
-                }
-
-                postArea.removeClass('loading'); // loading終了
-            }
-        });
-        return false;
-    }
-
-    var post_type = '';
-        postArea = $('#postsArea');
-        noticeMsg = '<p class="noItem">記事がありません。</p>';
-        target_type = '';
-        $('#support_list').parent().hide();
-        $('#item_list').parent().hide();
-
-    /*
-        支援情報リスト取得
-    */
-    $('#submit_search').click(function(){
-        post_type = $(this).data('post'); // 投稿タイプ取得
-
-        postArea.addClass('loading'); // loading開始
-        postArea.children().remove(); // 一旦投稿全削除
-
+    /************************************************************
+        サポートの形態の取得
+    ************************************************************/
+    $('#select_category').click(function(){
+        clearSupport();
+        clearResult();
 
         /* チェック状態取得 */
-        var list_support = $('#support_list input[type="checkbox"]:checked').map(function() {
+        var list_category = $('#category input[type="checkbox"]:checked').map(function() {
             return $(this).val();
         }).get();
 
@@ -159,9 +111,64 @@ jQuery(function($){
             type: 'POST',
             url: ajaxurl,
             data: {
-                'target_type' : target_type,    // 対象投稿タイプ送信
-                'list_support' : list_support,  // 選択したサポートの種類（カテゴリー名）
-                'action' : 'get_item_list',     // functionsに登録したAjax処理名
+                'target_type' : target_type,        // 対象投稿タイプ送信
+                'list_category' : list_category,    // 選択したサポートの種類（カテゴリー名）
+                'action' : 'get_support_type',      // functionsに登録したAjax処理名
+            },
+            success: function( response ){
+                // jsonData受け取る
+                if ( response == 'false' ) { // 選択できるものがなければ
+                    supportList.prepend('<li>選択できるものがありません</li>');
+                } else {
+                    jsonData = JSON.parse( response );
+                    $.each( jsonData, function( i, val ) {
+                        // valが配列 = $returnObj
+                        var support_type_name = val['support_type_name'],
+                            support_type_id = val['support_type_id'],
+                            postItem = '';
+                        postItem += '\
+                                <li>'
+                                + '<input type="checkbox" id="'
+                                + support_type_id
+                                + '" value="'
+                                + support_type_id
+                                + '" ><label for="'
+                                + support_type_id
+                                + '" >'
+                                + support_type_name
+                                + '</label>'
+                            +'</a></li>\
+                        ';
+                        supportList.prepend(postItem); // 選択肢追加
+                        supportList.parent().show();
+                    });
+                }
+            }
+        });
+        return false;
+    });
+
+
+    /************************************************************
+        支援一覧の取得
+    ************************************************************/
+    $('#select_support').click(function(){
+        clearSupport();
+        clearResult();
+
+        /* チェック状態取得 */
+        var list_support = $('#support input[type="checkbox"]:checked').map(function() {
+            return $(this).val();
+        }).get();
+
+        $.ajax({
+            type: 'POST',
+            url: ajaxurl,
+            data: {
+                'target_type' : target_type,        // 対象投稿タイプ送信
+                'list_category' : list_category,    // 選択したサポートの種類（カテゴリー名）
+                'list_support' : list_support,    // 選択したサポートの種類（カテゴリー名）
+                'action' : 'get_support_result',      // functionsに登録したAjax処理名
             },
             success: function( response ){
                 // jsonData受け取る
@@ -188,11 +195,9 @@ jQuery(function($){
                                 // +term_name
                             +'</article></a>\
                         ';
-
-                        postArea.prepend(postItem); // 投稿表示
+                       itemListArea.prepend(postItem); // 投稿表示
                     });
                 }
-                postArea.removeClass('loading'); // loading終了
             }
         });
         return false;
